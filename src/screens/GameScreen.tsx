@@ -1,10 +1,12 @@
-import React, { useEffect, useRef } from 'react';
+﻿import React, { useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, Modal, ScrollView, StyleSheet } from 'react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BG, SURFACE, ACCENT, TEXT, TEXT_DIM, CELL_BORDER } from '../constants/theme';
 import { t } from '../i18n';
 import { Difficulty } from '../game/words';
 import { useGameStore } from '../store/gameStore';
+import { playSound } from '../utils/sounds';
+import { loadInterstitial, showInterstitialIfReady } from '../utils/ads';
 import WordGrid from '../components/WordGrid';
 import WordList from '../components/WordList';
 
@@ -27,6 +29,26 @@ export default function GameScreen({ navigation }: Props) {
   const startGame = useGameStore(s => s.startGame);
   const tick = useGameStore(s => s.tick);
 
+
+  const prevWon       = useRef(won);
+  const prevFoundSize = useRef(foundWords.size);
+  const levelsSinceAd = useRef(0);
+
+  useEffect(() => { loadInterstitial(); }, []);
+
+  useEffect(() => {
+    if (won && !prevWon.current) {
+      playSound('win');
+      levelsSinceAd.current += 1;
+      if (levelsSinceAd.current >= 3) { levelsSinceAd.current = 0; showInterstitialIfReady(); }
+    }
+    prevWon.current = won;
+  }, [won]);
+
+  useEffect(() => {
+    if (foundWords.size > prevFoundSize.current) playSound('pour');
+    prevFoundSize.current = foundWords.size;
+  }, [foundWords.size]);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
   useEffect(() => {
     intervalRef.current = setInterval(() => tick(), 1000);
@@ -38,7 +60,7 @@ export default function GameScreen({ navigation }: Props) {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
-          <Text style={styles.backText}>← {t.newGame}</Text>
+          <Text style={styles.backText}>竊・{t.newGame}</Text>
         </TouchableOpacity>
         <Text style={styles.diffLabel}>{DIFF_LABELS[difficulty]}</Text>
       </View>
@@ -67,7 +89,7 @@ export default function GameScreen({ navigation }: Props) {
       <Modal visible={won} transparent animationType="fade">
         <View style={styles.overlay}>
           <View style={styles.modal}>
-            <Text style={styles.modalEmoji}>🎉</Text>
+            <Text style={styles.modalEmoji}>脂</Text>
             <Text style={styles.modalTitle}>{t.youWin}</Text>
             <Text style={styles.modalTime}>{formatTime(seconds)}</Text>
             <TouchableOpacity style={styles.modalBtn} onPress={() => startGame(difficulty)}>
@@ -135,3 +157,4 @@ const styles = StyleSheet.create({
   modalBtnSecondary: { paddingVertical: 8 },
   modalBtnSecondaryText: { fontSize: 14, color: TEXT_DIM },
 });
+

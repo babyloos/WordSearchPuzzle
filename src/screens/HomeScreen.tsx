@@ -1,5 +1,8 @@
-import React from 'react';
+﻿import React, { useEffect } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import { BannerAd, BannerAdSize } from 'react-native-google-mobile-ads';
+import { BANNER_AD_UNIT_ID } from '../utils/ads';
+import { initSounds } from '../utils/sounds';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { BG, SURFACE, ACCENT, TEXT, TEXT_DIM, CELL_BORDER } from '../constants/theme';
 import { t } from '../i18n';
@@ -54,6 +57,8 @@ export default function HomeScreen({ navigation }: Props) {
   const startGame = useGameStore(s => s.startGame);
   const bestTimes = useGameStore(s => s.bestTimes);
 
+  useEffect(() => { initSounds(); }, []);
+
   const handleStart = (difficulty: Difficulty) => {
     startGame(difficulty);
     navigation.navigate('Game');
@@ -68,7 +73,7 @@ export default function HomeScreen({ navigation }: Props) {
       {DIFFICULTIES.map(d => (
         <TouchableOpacity key={d} style={styles.diffBtn} onPress={() => handleStart(d)}>
           <Text style={styles.diffLabel}>{DIFF_LABELS[d]}</Text>
-          <Text style={styles.diffSub}>{GRID_SIZE[d]}×{GRID_SIZE[d]} · {WORD_COUNT[d]} words</Text>
+          <Text style={styles.diffSub}>{GRID_SIZE[d]}ﾃ養GRID_SIZE[d]} ﾂｷ {WORD_COUNT[d]} words</Text>
           {bestTimes[d] !== null && (
             <Text style={styles.best}>{t.best}: {formatTime(bestTimes[d]!)}</Text>
           )}
@@ -98,3 +103,4 @@ const styles = StyleSheet.create({
   diffSub: { fontSize: 12, color: TEXT_DIM, marginTop: 2 },
   best: { fontSize: 11, color: TEXT_DIM, marginTop: 2 },
 });
+
